@@ -1,0 +1,477 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - LFM{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Приветствие -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card financial-card">
+                <div class="card-header text-center">
+                    <h1 class="mb-0 text-white">
+                        <i class="fas fa-chart-line me-3"></i>
+                        Добро пожаловать в LFM!
+                    </h1>
+                    <p class="mb-0 text-white-50 mt-2">
+                        Ваш персональный финансовый менеджер
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Финансовые показатели -->
+    <div class="row mb-5">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card financial-card h-100">
+                <div class="card-header text-center">
+                    <i class="fas fa-wallet fa-2x text-white mb-2"></i>
+                    <h5 class="text-white mb-0">Общий баланс</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="mb-0" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        {{ total_balance|floatformat:2 }} ₽
+                    </h2>
+                    <small class="text-muted">Всего средств</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card financial-card h-100">
+                <div class="card-header text-center">
+                    <i class="fas fa-arrow-up fa-2x text-white mb-2"></i>
+                    <h5 class="text-white mb-0">Доходы</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="mb-0" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        {{ total_income|floatformat:2 }} ₽
+                    </h2>
+                    <small class="text-muted">За все время</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card financial-card h-100">
+                <div class="card-header text-center">
+                    <i class="fas fa-arrow-down fa-2x text-white mb-2"></i>
+                    <h5 class="text-white mb-0">Расходы</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="mb-0" style="background: var(--danger-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        {{ total_expense|floatformat:2 }} ₽
+                    </h2>
+                    <small class="text-muted">За все время</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card financial-card h-100">
+                <div class="card-header text-center">
+                    <i class="fas fa-exchange-alt fa-2x text-white mb-2"></i>
+                    <h5 class="text-white mb-0">Транзакции</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="mb-0" style="background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        {{ transactions_count }}
+                    </h2>
+                    <small class="text-muted">Всего операций</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярные акции 2025 года -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card financial-card">
+                <div class="card-header text-center">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Популярные акции 2025 года
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fab fa-apple fa-2x" style="color:#333;"></i>
+                                    </div>
+                                    <h6 class="card-title mb-1">Apple Inc. (AAPL)</h6>
+                                    <span class="badge bg-success mb-2">+8.2%</span>
+                                    <p class="card-text small text-muted">Технологии, США</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fab fa-google fa-2x" style="color:#4285F4;"></i>
+                                    </div>
+                                    <h6 class="card-title mb-1">Alphabet (GOOGL)</h6>
+                                    <span class="badge bg-success mb-2">+6.5%</span>
+                                    <p class="card-text small text-muted">Технологии, США</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fab fa-microsoft fa-2x" style="color:#0078D4;"></i>
+                                    </div>
+                                    <h6 class="card-title mb-1">Microsoft (MSFT)</h6>
+                                    <span class="badge bg-success mb-2">+7.1%</span>
+                                    <p class="card-text small text-muted">Технологии, США</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fab fa-tesla fa-2x" style="color:#cc0000;"></i>
+                                    </div>
+                                    <h6 class="card-title mb-1">Tesla (TSLA)</h6>
+                                    <span class="badge bg-danger mb-2">-2.3%</span>
+                                    <p class="card-text small text-muted">Электромобили, США</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Курсы валют 2025 года -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card financial-card">
+                <div class="card-header text-center">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-coins me-2"></i>
+                        Курсы валют (2025)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-2 col-md-4 col-6 mb-3">
+                            <div class="card h-100 text-center" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body">
+                                    <i class="fas fa-dollar-sign fa-2x mb-2" style="color:#28a745;"></i>
+                                    <h6 class="mb-1">USD / RUB</h6>
+                                    <span class="fw-bold">92.50</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6 mb-3">
+                            <div class="card h-100 text-center" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body">
+                                    <i class="fas fa-euro-sign fa-2x mb-2" style="color:#007bff;"></i>
+                                    <h6 class="mb-1">EUR / RUB</h6>
+                                    <span class="fw-bold">99.80</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6 mb-3">
+                            <div class="card h-100 text-center" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body">
+                                    <i class="fas fa-yen-sign fa-2x mb-2" style="color:#ffc107;"></i>
+                                    <h6 class="mb-1">CNY / RUB</h6>
+                                    <span class="fw-bold">12.70</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6 mb-3">
+                            <div class="card h-100 text-center" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body">
+                                    <i class="fas fa-sterling-sign fa-2x mb-2" style="color:#6f42c1;"></i>
+                                    <h6 class="mb-1">GBP / RUB</h6>
+                                    <span class="fw-bold">116.30</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6 mb-3">
+                            <div class="card h-100 text-center" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body">
+                                    <i class="fas fa-bitcoin fa-2x mb-2" style="color:#f7931a;"></i>
+                                    <h6 class="mb-1">BTC / USD</h6>
+                                    <span class="fw-bold">$52,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние транзакции -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Последние транзакции
+                    </h5>
+                    <a href="{% url 'add_transaction' %}" class="btn btn-light btn-sm" style="color: #111;">
+                        <i class="fas fa-plus me-1" style="color: #111;"></i>
+                        <span style="color: #111;">Добавить</span>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-transactions">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Описание</th>
+                                    <th>Категория</th>
+                                    <th>Сумма</th>
+                                    <th>Тип</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.date|date:"d.m.Y" }}</td>
+                                    <td>
+                                        <strong>{{ transaction.description }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background: var(--info-gradient);">
+                                            {{ transaction.category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold {% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                            {% if transaction.transaction_type == 'income' %}+{% else %}-{% endif %}
+                                            {{ transaction.amount|floatformat:2 }} ₽
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if transaction.transaction_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if transaction.transaction_type == 'income' %}
+                                                <i class="fas fa-arrow-up me-1"></i>Доход
+                                            {% else %}
+                                                <i class="fas fa-arrow-down me-1"></i>Расход
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'edit_transaction' transaction.id %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_transaction' transaction.id %}" class="btn btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Транзакций пока нет</h5>
+                        <p class="text-muted">Добавьте свою первую транзакцию, чтобы начать отслеживать финансы</p>
+                        <a href="{% url 'add_transaction' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Добавить транзакцию
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Советы по финансовой грамотности -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Советы по финансовой грамотности
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-piggy-bank fa-3x" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                    </div>
+                                    <h6 class="card-title">Создайте резервный фонд</h6>
+                                    <p class="card-text small text-muted">
+                                        Откладывайте 10-20% от дохода на непредвиденные расходы. Это поможет избежать долгов в сложные времена.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-chart-pie fa-3x" style="background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                    </div>
+                                    <h6 class="card-title">Ведите бюджет</h6>
+                                    <p class="card-text small text-muted">
+                                        Регулярно отслеживайте доходы и расходы. Это поможет понять, куда уходят деньги и где можно сэкономить.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-credit-card fa-3x" style="background: var(--warning-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                    </div>
+                                    <h6 class="card-title">Избегайте импульсных покупок</h6>
+                                    <p class="card-text small text-muted">
+                                        Перед крупной покупкой подождите 24 часа. Это поможет принять более взвешенное решение.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-graduation-cap fa-3x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                    </div>
+                                    <h6 class="card-title">Инвестируйте в себя</h6>
+                                    <p class="card-text small text-muted">
+                                        Вкладывайте в образование и развитие навыков. Это лучшая инвестиция в будущее.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-shield-alt fa-3x" style="background: var(--danger-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                    </div>
+                                    <h6 class="card-title">Защитите свои финансы</h6>
+                                    <p class="card-text small text-muted">
+                                        Используйте сложные пароли, двухфакторную аутентификацию и регулярно проверяйте выписки.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-target fa-3x" style="background: var(--secondary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                    </div>
+                                    <h6 class="card-title">Ставьте финансовые цели</h6>
+                                    <p class="card-text small text-muted">
+                                        Определите конкретные цели и сроки их достижения. Это мотивирует и помогает планировать.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Дополнительные стили для дашборда */
+    .financial-card {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .financial-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+        transform: translateX(-100%);
+        transition: transform 0.8s ease;
+    }
+
+    .financial-card:hover::before {
+        transform: translateX(100%);
+    }
+
+    .card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .btn-lg {
+        padding: 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 20px;
+        transition: all 0.4s ease;
+    }
+
+    .btn-lg:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background: var(--glass-bg);
+        transform: scale(1.01);
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .table-transactions .btn-outline-primary,
+    .table-transactions .btn-outline-danger {
+        border: 2px solid #1565c0 !important;
+        background: #fff !important;
+        color: #1565c0 !important;
+        opacity: 1 !important;
+    }
+    .table-transactions .btn-outline-danger {
+        border: 2px solid #c62828 !important;
+        color: #c62828 !important;
+    }
+    .table-transactions .btn-outline-primary:hover {
+        background: #1565c0 !important;
+        color: #fff !important;
+    }
+    .table-transactions .btn-outline-danger:hover {
+        background: #c62828 !important;
+        color: #fff !important;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">Удалить транзакцию</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Вы уверены, что хотите удалить транзакцию?</p>
+                    <div class="alert alert-info">
+                        <strong>Детали транзакции:</strong>
+                        <ul class="mb-0">
+                            <li>Тип: {% if transaction.transaction_type == 'income' %}Доход{% else %}Расход{% endif %}</li>
+                            <li>Сумма: {{ transaction.amount }} ₽</li>
+                            <li>Описание: {{ transaction.description }}</li>
+                            <li>Дата: {{ transaction.date|date:"d.m.Y" }}</li>
+                        </ul>
+                    </div>
+                    <p class="card-text text-muted">Это действие нельзя отменить.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

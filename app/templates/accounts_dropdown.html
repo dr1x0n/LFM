@@ -1,0 +1,36 @@
+{% if saved_accounts %}
+<div class="dropdown-menu dropdown-menu-end">
+    <div class="user-info">
+        <i class="fas fa-user me-2"></i>{{ user.username }}
+    </div>
+    <div class="dropdown-divider"></div>
+    
+    {% for account in saved_accounts %}
+    <a class="dropdown-item" href="{% url 'switch_account' account.username %}">
+        <i class="fas fa-exchange-alt"></i>{{ account.username }}
+        <small class="text-muted d-block">{{ account.last_used|date:"d.m.Y H:i" }}</small>
+    </a>
+    {% endfor %}
+    
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="{% url 'add_account' %}">
+        <i class="fas fa-plus"></i>Добавить аккаунт
+    </a>
+    <a class="dropdown-item" href="{% url 'logout' %}">
+        <i class="fas fa-sign-out-alt"></i>Выйти
+    </a>
+</div>
+{% else %}
+<div class="dropdown-menu dropdown-menu-end">
+    <div class="user-info">
+        <i class="fas fa-user me-2"></i>{{ user.username }}
+    </div>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="{% url 'add_account' %}">
+        <i class="fas fa-plus"></i>Добавить аккаунт
+    </a>
+    <a class="dropdown-item" href="{% url 'logout' %}">
+        <i class="fas fa-sign-out-alt"></i>Выйти
+    </a>
+</div>
+{% endif %} 

@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить транзакцию - LFM{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Добавить транзакцию</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Отладочная информация -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5>Ошибки формы:</h5>
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <style>
+                    #id_amount::placeholder, #id_description::placeholder {
+                        color: #fff !important;
+                        opacity: 1;
+                    }
+                    </style>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Сумма -->
+                        <div class="mb-3">
+                            <label for="id_amount" class="form-label">Сумма</label>
+                            <input type="number" 
+                                   name="amount" 
+                                   id="id_amount" 
+                                   class="form-control" 
+                                   placeholder="Введите сумму" 
+                                   step="0.01" 
+                                   required
+                                   style="background: rgba(40, 60, 114, 0.92) !important; color: #fff !important;">
+                        </div>
+
+                        <!-- Описание -->
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Описание</label>
+                            <input type="text" 
+                                   name="description" 
+                                   id="id_description" 
+                                   class="form-control" 
+                                   placeholder="Введите описание транзакции" 
+                                   required
+                                   style="background: rgba(40, 60, 114, 0.92) !important; color: #fff !important;">
+                        </div>
+
+                        <!-- Дата -->
+                        <div class="mb-3">
+                            <label for="id_date" class="form-label">Дата</label>
+                            <input type="date" 
+                                   name="date" 
+                                   id="id_date" 
+                                   class="form-control" 
+                                   required>
+                        </div>
+
+                        <!-- Тип транзакции -->
+                        <div class="mb-3">
+                            <label for="id_transaction_type" class="form-label">Тип транзакции</label>
+                            <select name="transaction_type" 
+                                    id="id_transaction_type" 
+                                    class="form-control" 
+                                    required>
+                                <option value="">Выберите тип транзакции</option>
+                                <option value="income">Доход</option>
+                                <option value="expense">Расход</option>
+                            </select>
+                        </div>
+
+                        <!-- Категория -->
+                        <div class="mb-3">
+                            <label for="id_category" class="form-label">Категория</label>
+                            <select name="category" 
+                                    id="id_category" 
+                                    class="form-control" 
+                                    required>
+                                <option value="">Выберите категорию</option>
+                                <option value="Продукты">Продукты</option>
+                                <option value="Транспорт">Транспорт</option>
+                                <option value="Развлечения">Развлечения</option>
+                                <option value="Здоровье">Здоровье</option>
+                                <option value="Образование">Образование</option>
+                                <option value="Одежда">Одежда</option>
+                                <option value="Коммунальные услуги">Коммунальные услуги</option>
+                                <option value="Зарплата">Зарплата</option>
+                                <option value="Подработка">Подработка</option>
+                                <option value="Инвестиции">Инвестиции</option>
+                                <option value="Другое">Другое</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                Назад
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                Сохранить транзакцию
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('JavaScript загружен!');
+    
+    // Автоматическое заполнение даты
+    const dateField = document.getElementById('id_date');
+    if (dateField && !dateField.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateField.value = today;
+        console.log('Дата установлена:', today);
+    }
+    
+    // Проверяем все поля формы
+    const inputs = document.querySelectorAll('input, select');
+    console.log('Найдено полей формы:', inputs.length);
+    
+    inputs.forEach((input, index) => {
+        console.log(`Поле ${index + 1}:`, input.type, input.name, input.id);
+        
+        // Добавляем обработчики событий
+        input.addEventListener('focus', function() {
+            console.log('Фокус на поле:', this.name);
+        });
+        
+        input.addEventListener('input', function() {
+            console.log('Ввод в поле:', this.name, 'значение:', this.value);
+        });
+    });
+    
+    // Проверяем, что форма отправляется
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        console.log('Форма отправляется!');
+        console.log('Данные формы:', new FormData(this));
+    });
+});
+</script>
+{% endblock %} 

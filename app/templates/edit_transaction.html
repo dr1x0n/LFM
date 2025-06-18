@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Редактировать транзакцию</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Тип транзакции -->
+                        <div class="mb-3">
+                            <label class="form-label">Тип транзакции</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="transaction_type" id="income" value="income" {% if transaction.transaction_type == 'income' %}checked{% endif %} required>
+                                <label class="btn btn-outline-success" for="income">Доход</label>
+                                
+                                <input type="radio" class="btn-check" name="transaction_type" id="expense" value="expense" {% if transaction.transaction_type == 'expense' %}checked{% endif %} required>
+                                <label class="btn btn-outline-danger" for="expense">Расход</label>
+                            </div>
+                        </div>
+
+                        <!-- Сумма -->
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Сумма</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" value="{{ transaction.amount }}" required>
+                                <span class="input-group-text">₽</span>
+                            </div>
+                        </div>
+
+                        <!-- Описание -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание</label>
+                            <input type="text" class="form-control" id="description" name="description" maxlength="200" value="{{ transaction.description }}" required>
+                        </div>
+
+                        <!-- Дата -->
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Дата</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ transaction.date|date:'Y-m-d' }}" required>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Валидация формы
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}
+{% endblock %} 

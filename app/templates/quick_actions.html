@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Быстрые действия - LFM{% endblock %}
+
+{% block content %}
+<div class="container quick-actions-center">
+    <div class="row justify-content-center w-100">
+        <div class="col-lg-8">
+            <div class="card shadow-lg quick-actions-card">
+                <div class="card-header text-center bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Быстрые действия
+                    </h3>
+                </div>
+                <div class="card-body py-5">
+                    <div class="row quick-actions-row gy-4">
+                        <div class="col-md-6 col-lg-3 quick-actions-col">
+                            <a href="{% url 'add_transaction' %}" class="btn btn-primary btn-lg quick-actions-btn">
+                                <i class="fas fa-plus quick-action-icon"></i>
+                                Добавить транзакцию
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 quick-actions-col">
+                            <a href="{% url 'add_account' %}" class="btn btn-info btn-lg quick-actions-btn">
+                                <i class="fas fa-credit-card quick-action-icon"></i>
+                                Добавить аккаунт
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 quick-actions-col">
+                            <a href="{% url 'transactions' %}" class="btn btn-info btn-lg quick-actions-btn">
+                                <i class="fas fa-list quick-action-icon"></i>
+                                Все транзакции
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.quick-action-icon {
+    font-size: 2.2rem !important;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: #fff !important;
+    filter: drop-shadow(0 2px 6px #1565c055);
+}
+.quick-actions-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+}
+.quick-actions-card {
+    box-shadow: 0 8px 32px 0 rgba(30,60,114,0.18), 0 2px 8px 0 rgba(0,0,0,0.10);
+    border-radius: 28px;
+    background: rgba(40, 60, 114, 0.85);
+    border: 1.5px solid rgba(182, 227, 136, 0.18);
+    padding: 0;
+}
+.quick-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+}
+.quick-actions-col {
+    flex: 1 1 220px;
+    max-width: 260px;
+    min-width: 180px;
+    display: flex;
+    justify-content: center;
+}
+.quick-actions-btn {
+    width: 100%;
+    min-width: 160px;
+    max-width: 240px;
+    margin: 0 auto;
+}
+@media (max-width: 768px) {
+    .quick-actions-row {
+        gap: 1rem;
+    }
+    .quick-actions-col {
+        min-width: 140px;
+        max-width: 100%;
+    }
+    .quick-actions-btn {
+        min-width: 120px;
+        max-width: 100%;
+    }
+}
+</style>
+{% endblock %} 

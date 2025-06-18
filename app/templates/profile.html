@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль - LFM{% endblock %}
+
+{% block content %}
+<style>
+.card.financial-card {
+    pointer-events: auto !important;
+}
+.profile-rect-card {
+    border-radius: 22px;
+    box-shadow: 0 8px 32px 0 rgba(118,75,162,0.18), 0 2px 8px 0 rgba(0,0,0,0.10);
+    background: linear-gradient(135deg, rgba(118,75,162,0.12) 0%, rgba(102,126,234,0.10) 100%), rgba(255,255,255,0.85);
+    backdrop-filter: blur(18px);
+    padding: 2.5rem 2.2rem 2.2rem 2.2rem;
+    position: relative;
+    border: 2px solid #764ba2;
+    transition: box-shadow 0.3s, border 0.3s;
+    animation: fadeInProfile 0.7s cubic-bezier(.4,1.4,.6,1) 1;
+    width: 100%;
+    margin-bottom: 2.5rem;
+}
+@keyframes fadeInProfile {
+    from { opacity: 0; transform: translateY(40px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.profile-rect-card:hover {
+    box-shadow: 0 16px 48px 0 rgba(118,75,162,0.22), 0 4px 16px 0 rgba(0,0,0,0.13);
+    border: 2.5px solid #667eea;
+}
+.profile-rect-card .profile-label {
+    font-weight: 700;
+    color: #764ba2;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.01em;
+    font-size: 1.04rem;
+}
+.profile-rect-card .profile-value {
+    font-size: 1.13rem;
+    color: #222;
+    margin-bottom: 1.1rem;
+    word-break: break-all;
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    padding: 0.3rem 0.7rem;
+    box-shadow: 0 1px 4px 0 rgba(118,75,162,0.04);
+    transition: background 0.2s;
+}
+.profile-password {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(245, 249, 255, 0.85);
+    border-radius: 10px;
+    border: 1.5px solid #e3eafc;
+    box-shadow: 0 2px 8px 0 rgba(0,114,255,0.04);
+    padding: 0.2rem 0.7rem 0.2rem 0.7rem;
+    margin: 0.2rem 0 0.2rem 0;
+    min-height: 44px;
+    transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+}
+.profile-password input {
+    border: none;
+    background: transparent;
+    font-size: 1.13rem;
+    color: #1a237e;
+    width: 100%;
+    padding-right: 2.2rem;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+    outline: none;
+    transition: color 0.2s;
+}
+.profile-password input:focus {
+    color: #1976d2;
+}
+.profile-password .toggle-password {
+    position: absolute;
+    right: 0.3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-size: 1.15rem;
+    cursor: pointer;
+    outline: none;
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    transition: background 0.2s, color 0.2s;
+}
+.profile-password .toggle-password:hover {
+    background: #e3eafc;
+    color: #0d47a1;
+}
+.table-transactions .btn-group .btn-outline-primary {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1.5px solid #1565c0;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.table-transactions .btn-group .btn-outline-primary:hover {
+    background: #1565c0;
+    color: #fff;
+    border: 1.5px solid #1565c0;
+}
+.table-transactions .btn-group .btn-outline-danger {
+    background: #ffebee;
+    color: #c62828;
+    border: 1.5px solid #c62828;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.table-transactions .btn-group .btn-outline-danger:hover {
+    background: #c62828;
+    color: #fff;
+    border: 1.5px solid #c62828;
+}
+
+/* Дополнительные стили для профиля */
+.form-label {
+    color: #333;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border-radius: 15px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.input-group .btn {
+    border-radius: 0 15px 15px 0;
+    border-left: none;
+}
+
+.input-group .form-control {
+    border-radius: 15px 0 0 15px;
+}
+
+.password-toggle {
+    transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 20px;
+    transition: all 0.4s ease;
+}
+
+.btn-lg:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: var(--glass-bg);
+    transform: scale(1.01);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Анимация для статистики */
+.text-center i {
+    transition: all 0.3s ease;
+}
+
+.text-center:hover i {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Валидация форм */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-valid {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Стили для статистики трат */
+.spending-legend {
+    background: #fff;
+    border-radius: 18px;
+    padding: 1.5rem 1.2rem;
+    box-shadow: 0 8px 32px rgba(118, 75, 162, 0.10);
+}
+
+.category-list {
+    margin-top: 1.2rem;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f7f8fa;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+    border-left: 5px solid var(--cat-color, #764ba2);
+    transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+    position: relative;
+}
+
+.category-item:last-child {
+    margin-bottom: 0;
+}
+
+.category-item:hover {
+    background: #eef2fb;
+    box-shadow: 0 4px 16px rgba(102,126,234,0.13);
+    border-left-width: 7px;
+}
+
+.category-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    border: 2.5px solid #fff;
+    flex-shrink: 0;
+}
+
+.category-item .fw-bold {
+    color: #23272b !important;
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin-bottom: 0.1rem;
+}
+
+.category-item .text-muted {
+    color: #888 !important;
+    font-size: 0.98rem;
+}
+
+.category-item .text-end .fw-bold {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #23272b !important;
+}
+
+.total-spending {
+    background: linear-gradient(135deg, #f7f8fa 0%, #e3eafc 100%);
+    border: 2px solid #b6b6e3;
+    border-radius: 15px;
+    padding: 1.2rem 0.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+}
+
+.total-spending h3 {
+    color: #764ba2;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    letter-spacing: 0.01em;
+}
+
+.total-spending p {
+    color: #666;
+    margin-bottom: 0;
+    font-size: 1.08rem;
+}
+
+.chart-container {
+    background: #f2f4f8;
+    border-radius: 18px;
+    padding: 2.2rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(102,126,234,0.13);
+    border: 2.5px solid #e3eafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 380px;
+}
+.chart-container canvas {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+    border: 1.5px solid #d1d9e6;
+    padding: 0.5rem;
+    max-width: 100% !important;
+    max-height: 340px !important;
+}
+</style>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header text-center">
+                    <h4 class="text-white mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Личные данные
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="profile-label"><i class="fas fa-user me-2"></i>Имя пользователя</div>
+                        <div class="profile-value">{{ user.username }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="profile-label"><i class="fas fa-envelope me-2"></i>Email</div>
+                        <div class="profile-value">{{ user.email }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="profile-label"><i class="fas fa-calendar-alt me-2"></i>Дата регистрации</div>
+                        <div class="profile-value">{{ user.date_joined|date:"d.m.Y H:i" }}</div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="profile-label"><i class="fas fa-key me-2"></i>Пароль</div>
+                        <div class="profile-password">
+                            <input type="password" id="profilePassword" value="{{ user_password|default:'••••••••' }}" readonly>
+                            <button type="button" class="toggle-password" onclick="toggleProfilePassword()" title="Показать/скрыть пароль">
+                                <i class="fas fa-eye" id="profilePasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика пользователя -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="text-white mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Ваша статистика
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-calendar-alt fa-3x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                </div>
+                                <h4 class="mb-1">{{ user.date_joined|date:"d.m.Y" }}</h4>
+                                <p class="text-muted mb-0">Дата регистрации</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-clock fa-3x" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                </div>
+                                <h4 class="mb-1">{{ days_registered }}</h4>
+                                <p class="text-muted mb-0">Дней в системе</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-exchange-alt fa-3x" style="background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                </div>
+                                <h4 class="mb-1">{{ transactions_count }}</h4>
+                                <p class="text-muted mb-0">Всего транзакций</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-credit-card fa-3x" style="background: var(--warning-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                </div>
+                                <h4 class="mb-1">{{ accounts_count }}</h4>
+                                <p class="text-muted mb-0">Аккаунтов</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика трат по категориям -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="text-white mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Статистика трат по категориям
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-12 mb-4">
+                            <div class="chart-container" style="position: relative; min-height: 340px;">
+                                <canvas id="spendingChart" width="340" height="340" style="background: #fff; border-radius: 14px; border: 1.5px solid #d1d9e6; margin: 0 auto; display: block;"></canvas>
+                                {{ spending_by_category|json_script:"spending-data" }}
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <div class="spending-legend">
+                                <h5 class="mb-3 text-center text-dark">
+                                    <i class="fas fa-list me-2"></i>
+                                    Детализация трат
+                                </h5>
+                                <div class="total-spending">
+                                    <h3 class="mb-1">{{ total_spending|floatformat:0 }} ₽</h3>
+                                    <p class="mb-0">Общая сумма трат</p>
+                                </div>
+                                <div class="category-list">
+                                    {% for item in spending_by_category %}
+                                    <div class="category-item d-flex align-items-center justify-content-between p-3" style="background: rgba(255,255,255,0.9); border-left: 4px solid {{ item.color }};">
+                                        <div class="d-flex align-items-center">
+                                            <div class="category-color me-3" style="background-color: {{ item.color }};"></div>
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ item.category }}</div>
+                                                <small class="text-muted">{{ item.percentage }}%</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-dark">{{ item.amount|floatformat:0 }} ₽</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние действия -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="text-white mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Последние действия
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-transactions">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Описание</th>
+                                    <th>Категория</th>
+                                    <th>Сумма</th>
+                                    <th>Тип</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.date|date:"d.m.Y" }}</td>
+                                    <td>
+                                        <strong>{{ transaction.description }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background: var(--info-gradient);">
+                                            {{ transaction.category }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold {% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                            {% if transaction.transaction_type == 'income' %}+{% else %}-{% endif %}
+                                            {{ transaction.amount|floatformat:2 }} ₽
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if transaction.transaction_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if transaction.transaction_type == 'income' %}
+                                                <i class="fas fa-arrow-up me-1"></i>Доход
+                                            {% else %}
+                                                <i class="fas fa-arrow-down me-1"></i>Расход
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Действий пока нет</h5>
+                        <p class="text-muted">Начните добавлять транзакции, чтобы увидеть здесь свою активность</p>
+                        <a href="{% url 'add_transaction' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Добавить транзакцию
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переключение видимости пароля
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordField = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Валидация форм
+    const forms = document.querySelectorAll('.needs-validation');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+
+    // Анимация появления элементов
+    const elements = document.querySelectorAll('.card, .text-center');
+    elements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(30px)';
+        element.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js не подключён!');
+        return;
+    }
+    // Получаем данные из JSON-скрипта
+    const spendingData = JSON.parse(document.getElementById('spending-data').textContent);
+    console.log('spendingData:', spendingData);
+
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+    if (!ctx) {
+        console.error('Canvas не найден!');
+        return;
+    }
+    if (!spendingData.length) {
+        ctx.font = '16px sans-serif';
+        ctx.fillText('Нет данных для диаграммы', 30, 100);
+        return;
+    }
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: spendingData.map(item => item.category),
+            datasets: [{
+                data: spendingData.map(item => item.amount),
+                backgroundColor: spendingData.map(item => item.color),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                legend: { display: true, position: 'bottom' }
+            },
+            cutout: '60%'
+        }
+    });
+});
+
+function toggleProfilePassword() {
+    const input = document.getElementById('profilePassword');
+    const icon = document.getElementById('profilePasswordIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        input.value = 'Ваш пароль скрыт';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        input.value = '••••••••';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %} 
