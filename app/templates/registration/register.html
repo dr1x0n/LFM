@@ -131,46 +131,65 @@
 
 {% block extra_js %}
 <script>
-    // Валидация формы
-    (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
-        Array.prototype.slice.call(forms).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })()
-
-    // Функция для показа/скрытия пароля
-    function togglePasswordVisibility(passwordId, toggleId, iconId) {
-        const passwordInput = document.getElementById(passwordId);
-        const toggleIcon = document.getElementById(iconId);
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
+// Мгновенная валидация и подсветка ошибок
+['id_username','id_email','id_password1','id_password2'].forEach(function(id) {
+    const input = document.getElementById(id);
+    if (!input) return;
+    function validate() {
+        if (!input.checkValidity() || input.value.trim() === '') {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
         } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
         }
     }
+    input.addEventListener('input', validate);
+    input.addEventListener('blur', validate);
+    // Первичная проверка при загрузке (если autofill)
+    setTimeout(validate, 100);
+});
 
-    // Показать/скрыть пароль 1
-    document.getElementById('togglePassword1').addEventListener('click', function() {
-        togglePasswordVisibility('id_password1', 'togglePassword1', 'toggleIcon1');
-    });
+// Валидация формы
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
 
-    // Показать/скрыть пароль 2
-    document.getElementById('togglePassword2').addEventListener('click', function() {
-        togglePasswordVisibility('id_password2', 'togglePassword2', 'toggleIcon2');
-    });
+// Функция для показа/скрытия пароля
+function togglePasswordVisibility(passwordId, toggleId, iconId) {
+    const passwordInput = document.getElementById(passwordId);
+    const toggleIcon = document.getElementById(iconId);
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Показать/скрыть пароль 1
+document.getElementById('togglePassword1').addEventListener('click', function() {
+    togglePasswordVisibility('id_password1', 'togglePassword1', 'toggleIcon1');
+});
+
+// Показать/скрыть пароль 2
+document.getElementById('togglePassword2').addEventListener('click', function() {
+    togglePasswordVisibility('id_password2', 'togglePassword2', 'toggleIcon2');
+});
 </script>
 {% endblock %}
 {% endblock %} 
