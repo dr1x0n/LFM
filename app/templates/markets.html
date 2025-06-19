@@ -13,9 +13,23 @@
                         <div class="col-md-6">
                             <h5 class="mb-3"><i class="fas fa-dollar-sign me-2"></i>Валюты</h5>
                             {% for cur in currencies %}
-                            <div class="card mb-3 p-3">
+                            <a href="{% if cur.name == 'USD/RUB' %}https://www.bestchange.ru/dollar-rub.html{% elif cur.name == 'EUR/RUB' %}https://www.bestchange.ru/eur-rub.html{% elif cur.name == 'CNY/RUB' %}https://www.bestchange.ru/yuan-rub.html{% elif cur.name == 'GBP/RUB' %}https://www.bestchange.ru/gbp-rub.html{% elif cur.name == 'JPY/RUB' %}https://www.bestchange.ru/jpy-rub.html{% else %}https://www.bestchange.ru{% endif %}" target="_blank" style="text-decoration:none;">
+                            <div class="card mb-3 p-3 hover-shadow" style="cursor:pointer;">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
+                                        {% if cur.name == 'USD/RUB' %}
+                                            <i class="fas fa-dollar-sign me-2 text-success"></i>
+                                        {% elif cur.name == 'EUR/RUB' %}
+                                            <i class="fas fa-euro-sign me-2 text-primary"></i>
+                                        {% elif cur.name == 'CNY/RUB' %}
+                                            <i class="fas fa-yen-sign me-2 text-warning"></i>
+                                        {% elif cur.name == 'GBP/RUB' %}
+                                            <i class="fas fa-sterling-sign me-2" style="color:#6f42c1;"></i>
+                                        {% elif cur.name == 'JPY/RUB' %}
+                                            <i class="fas fa-coins me-2 text-info"></i>
+                                        {% else %}
+                                            <i class="fas fa-money-bill-wave me-2 text-muted"></i>
+                                        {% endif %}
                                         <strong>{{ cur.name }}</strong>
                                         <span class="ms-3 {% if cur.change > 0 %}text-success{% elif cur.change < 0 %}text-danger{% else %}text-muted{% endif %}">
                                             {% if cur.change > 0 %}+{% endif %}{{ cur.change }}
@@ -25,14 +39,29 @@
                                 </div>
                                 <canvas id="cur-{{ forloop.counter }}" height="40"></canvas>
                             </div>
+                            </a>
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
                             <h5 class="mb-3"><i class="fas fa-building-columns me-2"></i>Акции</h5>
                             {% for stock in stocks %}
-                            <div class="card mb-3 p-3">
+                            <a href="{% if stock.name == 'SBER' %}https://www.tinkoff.ru/invest/stocks/SBER/{% elif stock.name == 'GAZP' %}https://www.tinkoff.ru/invest/stocks/GAZP/{% elif stock.name == 'LKOH' %}https://www.tinkoff.ru/invest/stocks/LKOH/{% elif stock.name == 'YNDX' %}https://www.tinkoff.ru/invest/stocks/YNDX/{% elif stock.name == 'VKUS' %}https://www.tinkoff.ru/invest/stocks/VKUS/{% else %}https://www.moex.com{% endif %}" target="_blank" style="text-decoration:none;">
+                            <div class="card mb-3 p-3 hover-shadow" style="cursor:pointer;">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
+                                        {% if stock.name == 'SBER' %}
+                                            <i class="fas fa-university me-2 text-success"></i>
+                                        {% elif stock.name == 'GAZP' %}
+                                            <i class="fas fa-gas-pump me-2 text-primary"></i>
+                                        {% elif stock.name == 'LKOH' %}
+                                            <i class="fas fa-oil-can me-2 text-warning"></i>
+                                        {% elif stock.name == 'YNDX' %}
+                                            <i class="fab fa-yandex me-2 text-danger"></i>
+                                        {% elif stock.name == 'VKUS' %}
+                                            <i class="fas fa-apple-alt me-2 text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-chart-line me-2 text-info"></i>
+                                        {% endif %}
                                         <strong>{{ stock.name }}</strong>
                                         <span class="ms-3 {% if stock.change > 0 %}text-success{% elif stock.change < 0 %}text-danger{% else %}text-muted{% endif %}">
                                             {% if stock.change > 0 %}+{% endif %}{{ stock.change }}
@@ -42,6 +71,7 @@
                                 </div>
                                 <canvas id="stock-{{ forloop.counter }}" height="40"></canvas>
                             </div>
+                            </a>
                             {% endfor %}
                         </div>
                     </div>
@@ -89,4 +119,11 @@ new Chart(document.getElementById('stock-{{ forloop.counter }}').getContext('2d'
 });
 {% endfor %}
 </script>
+<style>
+.hover-shadow:hover { 
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); 
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+}
+</style>
 {% endblock %} 

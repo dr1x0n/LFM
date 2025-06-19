@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
+from django.conf import settings
 
 # Create your models here.
 
@@ -26,6 +27,7 @@ class Transaction(models.Model):
     description = models.CharField(max_length=200)
     date = models.DateField()
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ['-date']
@@ -53,3 +55,19 @@ class SavedAccount(models.Model):
 
     def __str__(self):
         return f"{self.username} (последний вход: {self.last_used.strftime('%d.%m.%Y %H:%M')})"
+
+class SavingsGoal(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    current_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    deadline = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def progress_percent(self):
+        if self.target_amount > 0:
+            return min(100, round((self.current_amount / self.target_amount) * 100, 2))
+        return 0
+
+    def __str__(self):
+        return f"{self.title} ({self.user.username})"

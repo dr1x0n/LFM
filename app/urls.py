@@ -17,4 +17,10 @@ urlpatterns = [
     path('delete-account/<int:account_id>/', views.delete_account, name='delete_account'),
     path('quick-actions/', views.quick_actions, name='quick_actions'),
     path('markets/', views.markets, name='markets'),
+    path('transactions/', views.transactions_list, name='transactions'),
+    path('financial-tips/', views.financial_tips, name='financial_tips'),
+    path('savings/', views.savings_list, name='savings_list'),
+    path('savings/add/', views.savings_add, name='savings_add'),
+    path('savings/edit/<int:goal_id>/', views.savings_edit, name='savings_edit'),
+    path('savings/delete/<int:goal_id>/', views.savings_delete, name='savings_delete'),
 ] 

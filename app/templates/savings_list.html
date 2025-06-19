@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Мои накопления - LFM{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8 col-md-10 text-center">
+            <h2 class="mb-3 lfm-gradient-text"><i class="fas fa-piggy-bank me-2"></i>Мои накопления</h2>
+            <a href="{% url 'savings_add' %}" class="btn btn-success mb-3"><i class="fas fa-plus"></i> Новая цель</a>
+        </div>
+    </div>
+    <div class="row g-4">
+        {% for goal in goals %}
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <div class="card shadow-sm border-0 mb-4 savings-goal-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">{{ goal.title }}</h5>
+                        <div>
+                            <a href="{% url 'savings_edit' goal.id %}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="fas fa-edit"></i></a>
+                            <a href="{% url 'savings_delete' goal.id %}" class="btn btn-sm btn-outline-danger" title="Удалить" onclick="return confirm('Удалить цель?')"><i class="fas fa-trash-alt"></i></a>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <span class="fw-bold">{{ goal.current_amount }} / {{ goal.target_amount }} ₽</span>
+                        {% if goal.deadline %}<span class="badge bg-secondary ms-2">до {{ goal.deadline|date:'d E Y г.' }}</span>{% endif %}
+                    </div>
+                    <div class="progress savings-progress" style="height: 28px; background: #e9ecef; box-shadow: 0 2px 8px rgba(102,126,234,0.10);">
+                        <div class="progress-bar savings-progress-bar" role="progressbar" style="width: {{ goal.progress_percent }}%;" aria-valuenow="{{ goal.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <span class="progress-label">{{ goal.progress_percent }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center text-muted">
+            <p>У вас пока нет целей накоплений. <a href="{% url 'savings_add' %}">Создайте первую цель!</a></p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<style>
+.savings-goal-card {
+    background: #29406a;
+    border-radius: 22px;
+    color: #fff;
+}
+.savings-goal-card .card-title { color: #fff; }
+.savings-progress {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #e9ecef;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.10);
+}
+.savings-progress-bar {
+    background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 16px;
+    transition: width 0.7s cubic-bezier(.4,2,.3,1);
+    box-shadow: 0 2px 8px rgba(54,209,196,0.13);
+    position: relative;
+}
+.savings-progress-bar .progress-label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-shadow: 0 1px 4px rgba(44,62,80,0.13);
+}
+</style>
+{% endblock %} 

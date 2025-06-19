@@ -3,12 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from .models import Transaction, Category, Account, SavedAccount
+from .models import Transaction, Category, Account, SavedAccount, SavingsGoal
 from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
-from .forms import AccountForm, TransactionForm
+from .forms import AccountForm, TransactionForm, CustomUserCreationForm, CategoryQuickForm, SavingsGoalForm
 from django.contrib.auth.models import User
 from django.db import models
 from django.db import transaction
@@ -19,17 +19,16 @@ from django.db import connection
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
-        
+        logout(request)
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             messages.success(request, 'Регистрация успешно завершена!')
             return redirect('dashboard')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
 def login_view(request):
@@ -70,43 +69,43 @@ def dashboard(request):
         'total_income': total_income,
         'total_expenses': total_expenses,
         'total_balance': total_balance,
+        'transactions_count': Transaction.objects.filter(user=request.user).count(),
     })
     return render(request, 'dashboard.html', context)
 
 @login_required
 def profile(request):
     try:
-        # Получаем данные пользователя
         user = request.user
         days_registered = (timezone.now().date() - user.date_joined.date()).days
         transactions_count = Transaction.objects.filter(user=user).count()
         accounts_count = Account.objects.filter(user=user, is_active=True).count()
-        
-        # Получаем последние транзакции
         recent_transactions = Transaction.objects.filter(user=user).order_by('-date')[:10]
-        
-        # Рассчитываем общие суммы
         total_income = Transaction.objects.filter(user=user, transaction_type='income').aggregate(total=Sum('amount'))['total'] or Decimal('0')
         total_expenses = Transaction.objects.filter(user=user, transaction_type='expense').aggregate(total=Sum('amount'))['total'] or Decimal('0')
         total_balance = total_income - total_expenses
-        
-        # Статистика трат по категориям
-        spending_by_category = [
-            {"category": "Продукты", "amount": 12500, "color": "#FF6384"},
-            {"category": "Транспорт", "amount": 8500, "color": "#36A2EB"},
-            {"category": "Развлечения", "amount": 6200, "color": "#FFCE56"},
-            {"category": "Коммунальные услуги", "amount": 4800, "color": "#4BC0C0"},
-            {"category": "Одежда", "amount": 3200, "color": "#9966FF"},
-            {"category": "Здоровье", "amount": 2800, "color": "#FF9F40"},
+
+        # Агрегация расходов по категориям
+        expense_transactions = Transaction.objects.filter(user=user, transaction_type='expense', category__isnull=False)
+        category_sums = expense_transactions.values('category__name').annotate(amount=Sum('amount')).order_by('-amount')
+        # Цвета для категорий (можно расширить)
+        category_colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#00C49A', '#FF6F91', '#FFD700', '#8B5CF6', '#00BFFF', '#FF8C00'
         ]
-        
-        # Общая сумма трат
-        total_spending = sum(item["amount"] for item in spending_by_category)
-        
-        # Добавляем процент для каждой категории
+        spending_by_category = []
+        for idx, item in enumerate(category_sums):
+            spending_by_category.append({
+                'category': item['category__name'],
+                'amount': float(item['amount']),
+                'color': category_colors[idx % len(category_colors)]
+            })
+        total_spending = sum(item['amount'] for item in spending_by_category)
         for item in spending_by_category:
-            item["percentage"] = round((item["amount"] / total_spending) * 100, 1)
-        
+            item['percentage'] = round((item['amount'] / total_spending) * 100, 1) if total_spending else 0
+
+        saved_account = SavedAccount.objects.filter(main_user=user, username=user.username).order_by('-last_used').first()
+        user_password = saved_account.password if saved_account else None
+
         context = get_base_context(request)
         context.update({
             'days_registered': days_registered,
@@ -118,10 +117,9 @@ def profile(request):
             'total_balance': total_balance,
             'spending_by_category': spending_by_category,
             'total_spending': total_spending,
+            'user_password': user_password,
         })
-        
         return render(request, 'profile.html', context)
-        
     except Exception as e:
         messages.error(request, f'Ошибка при загрузке данных: {str(e)}')
         context = get_base_context(request)
@@ -135,6 +133,7 @@ def profile(request):
             'total_balance': Decimal('0'),
             'spending_by_category': [],
             'total_spending': 0,
+            'user_password': None,
         })
         return render(request, 'profile.html', context)
 
@@ -208,116 +207,95 @@ def delete_account(request, account_id):
 
 @login_required
 def add_transaction(request):
-    """Представление для добавления транзакции"""
-    print("=== Starting add_transaction view ===")
-    print(f"Request method: {request.method}")
-    print(f"User: {request.user.username}")
-    
-    if request.method == 'POST':
-        print("Processing POST request")
+    # Автоматически создаём стандартные категории, если их нет
+    if not Category.objects.filter(user=request.user).exists():
+        default_cats = [
+            'Продукты', 'Транспорт', 'Развлечения', 'Здоровье', 'Образование',
+            'Одежда', 'Коммунальные услуги', 'Зарплата', 'Подработка', 'Инвестиции', 'Другое'
+        ]
+        for name in default_cats:
+            Category.objects.create(user=request.user, name=name)
+    category_form = None
+    category_created = False
+    if request.method == 'POST' and 'add_category' in request.POST:
+        category_form = CategoryQuickForm(request.POST)
+        if category_form.is_valid():
+            new_cat = category_form.save(commit=False)
+            new_cat.user = request.user
+            new_cat.save()
+            category_created = True
+            messages.success(request, f'Категория "{new_cat.name}" добавлена!')
+        form = TransactionForm()
+        form.fields['category'].queryset = Category.objects.filter(user=request.user)
+    elif request.method == 'POST':
         form = TransactionForm(request.POST)
-        print(f"Form data: {request.POST}")
-        
+        form.fields['category'].queryset = Category.objects.filter(user=request.user)
         if form.is_valid():
-            print("Form is valid")
             try:
                 transaction = form.save(commit=False)
                 transaction.user = request.user
                 transaction.save()
-                print(f"Transaction saved: {transaction}")
                 messages.success(request, 'Транзакция успешно добавлена')
                 return redirect('dashboard')
             except Exception as e:
-                print(f"Error saving transaction: {str(e)}")
                 messages.error(request, f'Ошибка при сохранении транзакции: {str(e)}')
         else:
-            print(f"Form errors: {form.errors}")
             messages.error(request, 'Пожалуйста, проверьте правильность введенных данных')
     else:
         form = TransactionForm()
-    
+        form.fields['category'].queryset = Category.objects.filter(user=request.user)
+        category_form = CategoryQuickForm()
     context = get_base_context(request)
     context.update({
         'title': 'Добавить транзакцию',
         'form': form,
+        'category_form': category_form or CategoryQuickForm(),
+        'category_created': category_created,
     })
     return render(request, 'add_transaction.html', context)
 
 @login_required
 @csrf_protect
 def add_account(request):
-    print("=== Starting add_account view ===")
-    print(f"Request method: {request.method}")
-    print(f"User: {request.user.username}")
-    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        save_account = request.POST.get('save_account') == 'on'
-        
-        print(f"Form data:")
-        print(f"- Username: {username}")
-        print(f"- Save account: {save_account}")
-        print(f"- CSRF Token: {request.POST.get('csrfmiddlewaretoken')}")
+        # save_account = request.POST.get('save_account') == 'on'  # больше не нужен
 
         if not username or not password:
-            print("Error: Username or password is empty")
             messages.error(request, 'Имя пользователя и пароль обязательны')
-            return redirect('dashboard')
+            return render(request, 'add_account.html')
 
         try:
-            # Сначала проверяем аутентификацию
             user = authenticate(request, username=username, password=password)
-            print(f"Authentication result: {user is not None}")
-            
             if user is not None:
-                # Сохраняем аккаунт перед входом
-                if save_account:
-                    print("Attempting to save account...")
-                    try:
-                        # Удаляем все существующие записи для этого username
-                        SavedAccount.objects.filter(
-                            username=username,
-                            main_user=request.user
-                        ).delete()
-                        
-                        # Создаем новую запись
-                        saved = SavedAccount.objects.create(
-                            username=username,
-                            password=password,
-                            main_user=request.user,
-                            last_used=timezone.now()
-                        )
-                        print(f"Created new account: {saved}")
-                            
-                        # Проверяем, что аккаунт действительно сохранился
-                        saved_accounts = SavedAccount.objects.filter(main_user=request.user)
-                        print(f"Total saved accounts for user: {saved_accounts.count()}")
-                        for acc in saved_accounts:
-                            print(f"- {acc.username} (last used: {acc.last_used})")
-                            
-                    except Exception as e:
-                        print(f"Error saving account: {str(e)}")
-                        messages.error(request, 'Ошибка при сохранении аккаунта')
-                        return redirect('dashboard')
-                
-                # Выполняем вход в аккаунт
-                print("Logging in...")
+                # Всегда сохраняем аккаунт
+                try:
+                    SavedAccount.objects.filter(
+                        username=username,
+                        main_user=request.user
+                    ).delete()
+                    SavedAccount.objects.create(
+                        username=username,
+                        password=password,
+                        main_user=request.user,
+                        last_used=timezone.now()
+                    )
+                except Exception as e:
+                    messages.error(request, 'Ошибка при сохранении аккаунта')
+                    return render(request, 'add_account.html')
                 login(request, user)
-                print("Login successful")
                 messages.success(request, f'Успешный вход в аккаунт {username}')
                 return redirect('dashboard')
             else:
-                print("Authentication failed")
                 messages.error(request, 'Неверное имя пользователя или пароль')
+                return render(request, 'add_account.html')
         except Exception as e:
-            print(f"Error during login: {str(e)}")
             messages.error(request, f'Ошибка при входе: {str(e)}')
-    
-    print("=== Ending add_account view ===")
-    # Если это GET запрос или произошла ошибка, показываем форму
-    context = get_base_context(request)
-    return render(request, 'dashboard.html', context)
+            return render(request, 'add_account.html')
+
+    # GET-запрос или после ошибки
+    return render(request, 'add_account.html')
 
 def get_base_context(request):
     # Получаем все сохраненные аккаунты для текущего пользователя
@@ -404,3 +382,197 @@ def markets(request):
     context = get_base_context(request)
     context.update({"currencies": currencies, "stocks": stocks})
     return render(request, 'markets.html', context)
+
+@login_required
+def transactions_list(request):
+    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+    context = get_base_context(request)
+    context.update({
+        'transactions': transactions,
+        'title': 'Все транзакции',
+    })
+    return render(request, 'transactions_list.html', context)
+
+@login_required
+def financial_tips(request):
+    tips = [
+        {
+            'icon': 'fas fa-piggy-bank',
+            'title': 'Создайте резервный фонд',
+            'text': 'Откладывайте 10-20% от дохода на непредвиденные расходы. Это поможет избежать долгов в сложные времена.',
+            'url': 'https://xn--h1alcedd.xn--d1aqf.xn--p1ai/instructions/finansovaya-gramotnost-chto-eto-takoe-i-kak-ee-povysit/'
+        },
+        {
+            'icon': 'fas fa-chart-pie',
+            'title': 'Ведите бюджет',
+            'text': 'Регулярно отслеживайте доходы и расходы. Это поможет понять, куда уходят деньги и где можно сэкономить.',
+            'url': 'https://journal.tinkoff.ru/financial-rules-investing-small-change-in-iia/'
+        },
+        {
+            'icon': 'fas fa-credit-card',
+            'title': 'Избегайте импульсных покупок',
+            'text': 'Перед крупной покупкой подумайте, действительно ли она вам нужна. Это поможет избежать лишних трат.',
+            'url': 'https://journal.tinkoff.ru/news/finzachet-2024/'
+        },
+        {
+            'icon': 'fas fa-user-graduate',
+            'title': 'Инвестируйте в себя',
+            'text': 'Образование и новые навыки — лучшая инвестиция, которая окупится в будущем.',
+            'url': 'https://journal.tinkoff.ru/financial-rules-investing-small-change-in-iia/'
+        },
+        {
+            'icon': 'fas fa-coins',
+            'title': 'Планируйте крупные покупки',
+            'text': 'Ставьте финансовые цели и планируйте бюджет, чтобы накопить на важные вещи.',
+            'url': 'https://xn--h1alcedd.xn--d1aqf.xn--p1ai/instructions/finansovaya-gramotnost-chto-eto-takoe-i-kak-ee-povysit/'
+        },
+        {
+            'icon': 'fas fa-shield-alt',
+            'title': 'Защищайте свои финансы',
+            'text': 'Будьте осторожны с мошенниками, не сообщайте свои данные третьим лицам.',
+            'url': 'https://xn--h1alcedd.xn--d1aqf.xn--p1ai/instructions/finansovaya-gramotnost-chto-eto-takoe-i-kak-ee-povysit/'
+        },
+        {
+            'icon': 'fas fa-balance-scale',
+            'title': 'Сравнивайте цены и условия',
+            'text': 'Перед покупкой или оформлением услуги сравните предложения разных компаний.',
+            'url': 'https://journal.tinkoff.ru/compare/'
+        },
+        {
+            'icon': 'fas fa-calendar-check',
+            'title': 'Платите счета вовремя',
+            'text': 'Это поможет избежать штрафов и сохранить хорошую кредитную историю.',
+            'url': 'https://journal.tinkoff.ru/guide/credit-history/'
+        },
+        {
+            'icon': 'fas fa-hand-holding-usd',
+            'title': 'Контролируйте кредиты',
+            'text': 'Старайтесь не брать кредиты на потребление и всегда рассчитывайте свою долговую нагрузку.',
+            'url': 'https://journal.tinkoff.ru/guide/credit/'
+        },
+        {
+            'icon': 'fas fa-lightbulb',
+            'title': 'Ставьте финансовые цели',
+            'text': 'Определите конкретные цели и сроки их достижения. Это мотивирует и помогает планировать.',
+            'url': 'https://journal.tinkoff.ru/goal/'
+        },
+        {
+            'icon': 'fas fa-book',
+            'title': 'Читайте о финансах',
+            'text': 'Постоянно повышайте свою финансовую грамотность — это инвестиция в ваше будущее.',
+            'url': 'https://journal.tinkoff.ru/list/finliteracy/'
+        },
+        {
+            'icon': 'fas fa-gift',
+            'title': 'Используйте бонусы и кэшбэк',
+            'text': 'Пользуйтесь программами лояльности, чтобы экономить на покупках.',
+            'url': 'https://journal.tinkoff.ru/guide/cashback/'
+        },
+        {
+            'icon': 'fas fa-seedling',
+            'title': 'Экологичное потребление',
+            'text': 'Покупайте только то, что действительно нужно. Это экономит деньги и бережёт природу.',
+            'url': 'https://journal.tinkoff.ru/guide/eco/'
+        },
+        {
+            'icon': 'fas fa-heartbeat',
+            'title': 'Заботьтесь о здоровье',
+            'text': 'Профилактика заболеваний дешевле лечения. Вкладывайтесь в здоровье и спорт.',
+            'url': 'https://journal.tinkoff.ru/guide/health/'
+        },
+        {
+            'icon': 'fas fa-users',
+            'title': 'Обсуждайте финансы с близкими',
+            'text': 'Открытое обсуждение бюджета помогает избегать конфликтов и достигать целей вместе.',
+            'url': 'https://journal.tinkoff.ru/guide/family-budget/'
+        },
+        {
+            'icon': 'fas fa-bullseye',
+            'title': 'Делайте регулярные сбережения',
+            'text': 'Откладывайте небольшие суммы регулярно, чтобы накопить на крупные цели.',
+            'url': 'https://journal.tinkoff.ru/guide/savings/'
+        },
+        {
+            'icon': 'fas fa-university',
+            'title': 'Изучайте банковские продукты',
+            'text': 'Разбирайтесь в условиях вкладов, кредитов и карт, чтобы выбирать лучшие предложения.',
+            'url': 'https://journal.tinkoff.ru/guide/bank-products/'
+        },
+        {
+            'icon': 'fas fa-chart-line',
+            'title': 'Инвестируйте с умом',
+            'text': 'Изучайте основы инвестирования и не вкладывайте все деньги в один актив.',
+            'url': 'https://journal.tinkoff.ru/guide/invest/'
+        },
+        {
+            'icon': 'fas fa-exclamation-triangle',
+            'title': 'Остерегайтесь мошенников',
+            'text': 'Проверяйте информацию и не переходите по подозрительным ссылкам.',
+            'url': 'https://journal.tinkoff.ru/guide/scam/'
+        },
+        {
+            'icon': 'fas fa-mobile-alt',
+            'title': 'Используйте финансовые приложения',
+            'text': 'Приложения помогают контролировать расходы и планировать бюджет.',
+            'url': 'https://journal.tinkoff.ru/guide/apps/'
+        },
+        {
+            'icon': 'fas fa-globe-europe',
+            'title': 'Планируйте путешествия заранее',
+            'text': 'Раннее бронирование и сравнение цен помогает экономить на поездках.',
+            'url': 'https://journal.tinkoff.ru/guide/travel/'
+        },
+    ]
+    context = get_base_context(request)
+    context['tips'] = tips
+    context['title'] = 'Финансовые подсказки'
+    return render(request, 'financial_tips.html', context)
+
+@login_required
+def savings_list(request):
+    goals = SavingsGoal.objects.filter(user=request.user).order_by('-created_at')
+    context = get_base_context(request)
+    context.update({'goals': goals, 'title': 'Мои накопления'})
+    return render(request, 'savings_list.html', context)
+
+@login_required
+def savings_add(request):
+    if request.method == 'POST':
+        form = SavingsGoalForm(request.POST)
+        if form.is_valid():
+            goal = form.save(commit=False)
+            goal.user = request.user
+            goal.save()
+            messages.success(request, 'Цель успешно добавлена!')
+            return redirect('savings_list')
+    else:
+        form = SavingsGoalForm()
+    context = get_base_context(request)
+    context.update({'form': form, 'title': 'Новая цель накоплений'})
+    return render(request, 'savings_add.html', context)
+
+@login_required
+def savings_edit(request, goal_id):
+    goal = get_object_or_404(SavingsGoal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        form = SavingsGoalForm(request.POST, instance=goal)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Цель обновлена!')
+            return redirect('savings_list')
+    else:
+        form = SavingsGoalForm(instance=goal)
+    context = get_base_context(request)
+    context.update({'form': form, 'goal': goal, 'title': 'Редактировать цель'})
+    return render(request, 'savings_edit.html', context)
+
+@login_required
+def savings_delete(request, goal_id):
+    goal = get_object_or_404(SavingsGoal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        goal.delete()
+        messages.success(request, 'Цель удалена!')
+        return redirect('savings_list')
+    context = get_base_context(request)
+    context.update({'goal': goal, 'title': 'Удалить цель'})
+    return render(request, 'savings_delete.html', context)

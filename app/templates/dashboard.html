@@ -61,7 +61,7 @@
                 </div>
                 <div class="card-body text-center">
                     <h2 class="mb-0" style="background: var(--danger-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                        {{ total_expense|floatformat:2 }} ₽
+                        {{ total_expenses|floatformat:2 }} ₽
                     </h2>
                     <small class="text-muted">За все время</small>
                 </div>
@@ -222,13 +222,13 @@
                         <i class="fas fa-history me-2"></i>
                         Последние транзакции
                     </h5>
-                    <a href="{% url 'add_transaction' %}" class="btn btn-light btn-sm" style="color: #111;">
-                        <i class="fas fa-plus me-1" style="color: #111;"></i>
-                        <span style="color: #111;">Добавить</span>
+                    <a href="{% url 'add_transaction' %}" class="btn btn-success btn-sm" style="background: linear-gradient(135deg, #198754 0%, #b6e388 100%) !important; color: #fff !important; border: none; box-shadow: 0 2px 8px rgba(25,135,84,0.12);">
+                        <i class="fas fa-plus me-1" style="color: #fff !important;"></i>
+                        <span style="color: #fff;">Добавить</span>
                     </a>
                 </div>
                 <div class="card-body">
-                    {% if recent_transactions %}
+                    {% if transactions %}
                     <div class="table-responsive">
                         <table class="table table-hover table-transactions">
                             <thead>
@@ -242,7 +242,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for transaction in recent_transactions %}
+                                {% for transaction in transactions %}
                                 <tr>
                                     <td>{{ transaction.date|date:"d.m.Y" }}</td>
                                     <td>
@@ -300,105 +300,9 @@
     </div>
 
     <!-- Советы по финансовой грамотности -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header text-center">
-                    <h5 class="text-white mb-0">
-                        <i class="fas fa-lightbulb me-2"></i>
-                        Советы по финансовой грамотности
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
-                                <div class="card-body text-center">
-                                    <div class="mb-3">
-                                        <i class="fas fa-piggy-bank fa-3x" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                    </div>
-                                    <h6 class="card-title">Создайте резервный фонд</h6>
-                                    <p class="card-text small text-muted">
-                                        Откладывайте 10-20% от дохода на непредвиденные расходы. Это поможет избежать долгов в сложные времена.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
-                                <div class="card-body text-center">
-                                    <div class="mb-3">
-                                        <i class="fas fa-chart-pie fa-3x" style="background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                    </div>
-                                    <h6 class="card-title">Ведите бюджет</h6>
-                                    <p class="card-text small text-muted">
-                                        Регулярно отслеживайте доходы и расходы. Это поможет понять, куда уходят деньги и где можно сэкономить.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
-                                <div class="card-body text-center">
-                                    <div class="mb-3">
-                                        <i class="fas fa-credit-card fa-3x" style="background: var(--warning-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                    </div>
-                                    <h6 class="card-title">Избегайте импульсных покупок</h6>
-                                    <p class="card-text small text-muted">
-                                        Перед крупной покупкой подождите 24 часа. Это поможет принять более взвешенное решение.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
-                                <div class="card-body text-center">
-                                    <div class="mb-3">
-                                        <i class="fas fa-graduation-cap fa-3x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                    </div>
-                                    <h6 class="card-title">Инвестируйте в себя</h6>
-                                    <p class="card-text small text-muted">
-                                        Вкладывайте в образование и развитие навыков. Это лучшая инвестиция в будущее.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
-                                <div class="card-body text-center">
-                                    <div class="mb-3">
-                                        <i class="fas fa-shield-alt fa-3x" style="background: var(--danger-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                    </div>
-                                    <h6 class="card-title">Защитите свои финансы</h6>
-                                    <p class="card-text small text-muted">
-                                        Используйте сложные пароли, двухфакторную аутентификацию и регулярно проверяйте выписки.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
-                                <div class="card-body text-center">
-                                    <div class="mb-3">
-                                        <i class="fas fa-target fa-3x" style="background: var(--secondary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                    </div>
-                                    <h6 class="card-title">Ставьте финансовые цели</h6>
-                                    <p class="card-text small text-muted">
-                                        Определите конкретные цели и сроки их достижения. Это мотивирует и помогает планировать.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {# Удалён по просьбе пользователя. #}
+
+    {# Кнопка финансовых подсказок убрана по просьбе пользователя #}
 </div>
 
 <style>

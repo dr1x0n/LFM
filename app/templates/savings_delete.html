@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Удалить цель - LFM{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h4 class="mb-4 lfm-gradient-text"><i class="fas fa-trash-alt me-2"></i>Удалить цель?</h4>
+                    <p class="mb-4">Вы действительно хотите удалить цель <b>"{{ goal.title }}"</b>?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Удалить</button>
+                        <a href="{% url 'savings_list' %}" class="btn btn-secondary ms-2">Отмена</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Новая цель накоплений - LFM{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h4 class="mb-4 lfm-gradient-text"><i class="fas fa-piggy-bank me-2"></i>Новая цель накоплений</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Сохранить</button>
+                        <a href="{% url 'savings_list' %}" class="btn btn-secondary ms-2">Отмена</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

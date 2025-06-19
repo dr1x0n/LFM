@@ -278,27 +278,43 @@
 }
 
 .total-spending {
-    background: linear-gradient(135deg, #f7f8fa 0%, #e3eafc 100%);
-    border: 2px solid #b6b6e3;
-    border-radius: 15px;
-    padding: 1.2rem 0.5rem;
+    background: #fff;
+    border: 2.5px solid #764ba2;
+    border-radius: 18px;
+    padding: 1.5rem 0.5rem 1.2rem 0.5rem;
     text-align: center;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+    box-shadow: 0 4px 24px rgba(102,126,234,0.10);
+    max-width: 100%;
 }
 
 .total-spending h3 {
-    color: #764ba2;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    font-size: 2rem;
+    color: #23272b;
+    font-weight: 900;
+    margin-bottom: 0.3rem;
+    font-size: 2.7rem;
     letter-spacing: 0.01em;
+    opacity: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.total-spending h3 .ruble {
+    font-size: 2.1rem;
+    font-weight: 900;
+    color: #764ba2;
+    margin-left: 0.1em;
+    filter: drop-shadow(0 1px 2px #e3eafc);
 }
 
 .total-spending p {
-    color: #666;
+    color: #23272b;
     margin-bottom: 0;
-    font-size: 1.08rem;
+    font-size: 1.18rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
 }
 
 .chart-container {
@@ -430,8 +446,18 @@
                     <div class="row">
                         <div class="col-lg-8 col-md-12 mb-4">
                             <div class="chart-container" style="position: relative; min-height: 340px;">
-                                <canvas id="spendingChart" width="340" height="340" style="background: #fff; border-radius: 14px; border: 1.5px solid #d1d9e6; margin: 0 auto; display: block;"></canvas>
+                                {% if not spending_by_category %}
+                                <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100" style="min-height: 320px;">
+                                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(102,126,234,0.13); margin-bottom: 1.2rem;">
+                                        <i class="fas fa-chart-pie fa-2x text-white"></i>
+                                    </div>
+                                    <div class="text-muted fs-5 fw-bold mb-2">Нет данных для диаграммы</div>
+                                    <div class="text-muted">Добавьте хотя бы одну расходную транзакцию с категорией</div>
+                                </div>
+                                {% else %}
+                                <canvas id="spendingChart" width="340" height="340" style="background: #fff; border-radius: 18px; border: 2.5px solid #d1d9e6; margin: 0 auto; display: block; box-shadow: 0 4px 32px 0 rgba(102,126,234,0.10), 0 2px 8px 0 rgba(0,0,0,0.08);"></canvas>
                                 {{ spending_by_category|json_script:"spending-data" }}
+                                {% endif %}
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-12">
@@ -441,7 +467,7 @@
                                     Детализация трат
                                 </h5>
                                 <div class="total-spending">
-                                    <h3 class="mb-1">{{ total_spending|floatformat:0 }} ₽</h3>
+                                    <h3 class="mb-1">{{ total_spending|floatformat:0 }} <span class="ruble">₽</span></h3>
                                     <p class="mb-0">Общая сумма трат</p>
                                 </div>
                                 <div class="category-list">
@@ -593,16 +619,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Получаем данные из JSON-скрипта
     const spendingData = JSON.parse(document.getElementById('spending-data').textContent);
-    console.log('spendingData:', spendingData);
-
     const ctx = document.getElementById('spendingChart').getContext('2d');
     if (!ctx) {
         console.error('Canvas не найден!');
         return;
     }
     if (!spendingData.length) {
-        ctx.font = '16px sans-serif';
-        ctx.fillText('Нет данных для диаграммы', 30, 100);
+        // Не рисуем текст на canvas, т.к. теперь красивый блок в шаблоне
         return;
     }
     new Chart(ctx, {
@@ -612,15 +635,47 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 data: spendingData.map(item => item.amount),
                 backgroundColor: spendingData.map(item => item.color),
-                borderWidth: 2
+                borderWidth: 3,
+                borderColor: '#fff',
+                hoverBorderColor: '#667eea',
+                hoverOffset: 16,
+                cutout: '65%',
+                borderRadius: 12,
+                shadowOffsetX: 0,
+                shadowOffsetY: 2,
+                shadowBlur: 8,
+                shadowColor: 'rgba(102,126,234,0.10)'
             }]
         },
         options: {
-            responsive: false,
+            responsive: true,
             plugins: {
-                legend: { display: true, position: 'bottom' }
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: '#222',
+                        font: { size: 15, weight: 'bold' },
+                        padding: 18,
+                        boxWidth: 18,
+                        boxHeight: 18,
+                        borderRadius: 8
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#222',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#667eea',
+                    borderWidth: 1.5,
+                    padding: 12,
+                    caretSize: 8,
+                    cornerRadius: 8
+                }
             },
-            cutout: '60%'
+            cutout: '65%',
+            layout: { padding: 18 },
+            animation: { animateRotate: true, animateScale: true }
         }
     });
 });

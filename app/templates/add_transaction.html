@@ -80,29 +80,23 @@
                         <!-- Категория -->
                         <div class="mb-3">
                             <label for="id_category" class="form-label">Категория</label>
-                            <select name="category" 
-                                    id="id_category" 
-                                    class="form-control" 
-                                    required>
+                            <select name="category" id="id_category" class="form-control" required style="background: rgba(40, 60, 114, 0.92); color: #fff; border-radius: 15px; font-size: 1.08rem;">
                                 <option value="">Выберите категорию</option>
-                                <option value="Продукты">Продукты</option>
-                                <option value="Транспорт">Транспорт</option>
-                                <option value="Развлечения">Развлечения</option>
-                                <option value="Здоровье">Здоровье</option>
-                                <option value="Образование">Образование</option>
-                                <option value="Одежда">Одежда</option>
-                                <option value="Коммунальные услуги">Коммунальные услуги</option>
-                                <option value="Зарплата">Зарплата</option>
-                                <option value="Подработка">Подработка</option>
-                                <option value="Инвестиции">Инвестиции</option>
-                                <option value="Другое">Другое</option>
+                                {% for cat in form.fields.category.queryset %}
+                                    <option value="{{ cat.id }}" {% if form.category.value|stringformat:'s' == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
                             </select>
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">{{ form.category.errors }}</div>
+                            {% endif %}
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-                                Назад
-                            </a>
+                            {% if request.GET.from == 'quick_actions' %}
+                                <a href="{% url 'quick_actions' %}" class="btn btn-secondary">Назад</a>
+                            {% else %}
+                                <a href="#" class="btn btn-secondary" onclick="window.history.back(); return false;">Назад</a>
+                            {% endif %}
                             <button type="submit" class="btn btn-primary">
                                 Сохранить транзакцию
                             </button>

@@ -41,6 +41,8 @@
             min-height: 100vh;
             color: #f3f6fa;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes gradientShift {
@@ -554,6 +556,74 @@
         .table-transactions td strong {
             color: #23272b !important;
         }
+
+        .navbar .dropdown {
+            position: relative !important;
+        }
+        .navbar .dropdown-menu-end {
+            right: 0 !important;
+            left: auto !important;
+            position: absolute !important;
+            transform: none !important;
+            min-width: 320px;
+            max-width: 380px;
+            z-index: 1050;
+        }
+        @media (max-width: 768px) {
+            .navbar .dropdown-menu-end {
+                left: 0 !important;
+                right: 0 !important;
+            }
+        }
+
+        .btn-outline-primary:hover, .btn-outline-primary:focus {
+            background: #1976d2 !important;
+            border-color: #1976d2 !important;
+        }
+        .btn-outline-primary:hover .fa-edit,
+        .btn-outline-primary:focus .fa-edit,
+        .btn-outline-primary.active .fa-edit,
+        .btn-outline-primary:active .fa-edit,
+        .btn-group .btn-outline-primary:hover .fa-edit,
+        .btn-group .btn-outline-primary:focus .fa-edit {
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+        .btn-outline-danger:hover, .btn-outline-danger:focus {
+            background: #c62828 !important;
+            border-color: #c62828 !important;
+        }
+        .btn-outline-danger:hover .fa-trash,
+        .btn-outline-danger:focus .fa-trash,
+        .btn-outline-danger.active .fa-trash,
+        .btn-outline-danger:active .fa-trash,
+        .btn-group .btn-outline-danger:hover .fa-trash,
+        .btn-group .btn-outline-danger:focus .fa-trash {
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+        .btn-outline-primary .fa-edit,
+        .btn-outline-danger .fa-trash {
+            color: #1976d2 !important;
+            opacity: 1 !important;
+            filter: none !important;
+            transition: color 0.2s;
+        }
+        .btn-outline-danger .fa-trash {
+            color: #c62828 !important;
+        }
+        .btn-outline-primary:hover .fa-edit,
+        .btn-outline-primary:focus .fa-edit,
+        .btn-outline-primary.active .fa-edit,
+        .btn-outline-primary:active .fa-edit {
+            color: #fff !important;
+        }
+        .btn-outline-danger:hover .fa-trash,
+        .btn-outline-danger:focus .fa-trash,
+        .btn-outline-danger.active .fa-trash,
+        .btn-outline-danger:active .fa-trash {
+            color: #fff !important;
+        }
     </style>
 </head>
 <body>
@@ -572,10 +642,12 @@
 
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand lfm-logo pulse" href="{% url 'dashboard' %}">
-                <i class="fas fa-wallet me-2"></i><span class="lfm-gradient-text">LFM</span>
-            </a>
+        <div class="container d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand lfm-logo pulse me-3" href="{% url 'dashboard' %}">
+                    <i class="fas fa-wallet me-2"></i><span class="lfm-gradient-text">LFM</span>
+                </a>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -590,6 +662,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'markets' %}">
                             <i class="fas fa-chart-line me-1"></i>Валюты и акции
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'financial_tips' %}">
+                            <i class="fas fa-lightbulb me-1"></i>Финансовые подсказки
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'savings_list' %}">
+                            <i class="fas fa-piggy-bank me-1"></i>Накопления
                         </a>
                     </li>
                     {% endif %}
@@ -656,7 +738,7 @@
     </nav>
 
     <!-- Основной контент -->
-    <main class="fade-in" style="position: relative; z-index: 1;">
+    <main class="fade-in" style="position: relative; z-index: 1; flex: 1 0 auto;">
         {% if messages %}
         <div class="container mt-3">
             {% for message in messages %}
@@ -672,9 +754,9 @@
     </main>
 
     <!-- Подвал -->
-    <footer class="py-4">
+    <footer class="py-2" style="background: var(--glass-bg); min-height: 48px; margin-top: auto;">
         <div class="container text-center">
-            <p class="mb-0 text-white">&copy; 2024 LFM. Все права защищены.</p>
+            <p class="mb-0 text-white">&copy; 2025 LFM. Все права защищены.</p>
         </div>
     </footer>
 
