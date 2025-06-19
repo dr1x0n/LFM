@@ -1,7 +1,16 @@
 {% extends 'base.html' %}
 {% block title %}Новая цель накоплений - LFM{% endblock %}
 {% block content %}
-<div class="container mt-5 mb-5">
+<style>
+.savings-form-label, .savings-form-label label, .savings-form-label .form-label {
+    color: #fff !important;
+}
+.savings-form-label input::placeholder, .savings-form-label textarea::placeholder {
+    color: #e0e6f6 !important;
+    opacity: 1;
+}
+</style>
+<div class="container mt-5 mb-5 savings-form-label">
     <div class="row justify-content-center">
         <div class="col-lg-6 col-md-8">
             <div class="card shadow-sm border-0">

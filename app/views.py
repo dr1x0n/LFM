@@ -16,6 +16,9 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_protect
 from django.db import connection
+from django import forms
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 def register(request):
     if request.user.is_authenticated:
@@ -60,8 +63,8 @@ def dashboard(request):
     """Представление для главной страницы"""
     total_income = Transaction.objects.filter(user=request.user, transaction_type='income').aggregate(total=Sum('amount'))['total'] or 0
     total_expenses = Transaction.objects.filter(user=request.user, transaction_type='expense').aggregate(total=Sum('amount'))['total'] or 0
+    # Общий баланс = доходы - расходы (накопления уже учтены в транзакциях)
     total_balance = total_income - total_expenses
-    
     context = get_base_context(request)
     context.update({
         'title': 'Главная',
@@ -189,9 +192,7 @@ def delete_account(request, account_id):
     account = get_object_or_404(Account, id=account_id, user=request.user)
     
     if request.method == 'POST':
-        account.is_active = False
-        account.save()
-        
+        account.delete()
         # Если удаляемый аккаунт был активным, переключаемся на другой
         if request.session.get('active_account') == account.id:
             other_account = Account.objects.filter(user=request.user, is_active=True).first()
@@ -199,7 +200,6 @@ def delete_account(request, account_id):
                 request.session['active_account'] = other_account.id
             else:
                 request.session.pop('active_account', None)
-        
         messages.success(request, f'Аккаунт "{account.name}" удален')
         return redirect('profile')
     
@@ -254,7 +254,6 @@ def add_transaction(request):
     })
     return render(request, 'add_transaction.html', context)
 
-@login_required
 @csrf_protect
 def add_account(request):
     if request.method == 'POST':
@@ -269,24 +268,36 @@ def add_account(request):
         try:
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                # Всегда сохраняем аккаунт
-                try:
-                    SavedAccount.objects.filter(
-                        username=username,
-                        main_user=request.user
-                    ).delete()
+                # Если пользователь залогинен — создаём дополнительный аккаунт
+                if request.user.is_authenticated:
+                    try:
+                        SavedAccount.objects.filter(
+                            username=username,
+                            main_user=request.user
+                        ).delete()
+                        SavedAccount.objects.create(
+                            username=username,
+                            password=password,
+                            main_user=request.user,
+                            last_used=timezone.now()
+                        )
+                    except Exception as e:
+                        messages.error(request, 'Ошибка при сохранении аккаунта')
+                        return render(request, 'add_account.html')
+                    login(request, user)
+                    messages.success(request, f'Успешный вход в аккаунт {username}')
+                    return redirect('dashboard')
+                else:
+                    # Если не залогинен — логиним и создаём SavedAccount для себя
+                    login(request, user)
                     SavedAccount.objects.create(
                         username=username,
                         password=password,
-                        main_user=request.user,
+                        main_user=user,
                         last_used=timezone.now()
                     )
-                except Exception as e:
-                    messages.error(request, 'Ошибка при сохранении аккаунта')
-                    return render(request, 'add_account.html')
-                login(request, user)
-                messages.success(request, f'Успешный вход в аккаунт {username}')
-                return redirect('dashboard')
+                    messages.success(request, f'Аккаунт создан и выполнен вход: {username}')
+                    return redirect('dashboard')
             else:
                 messages.error(request, 'Неверное имя пользователя или пароль')
                 return render(request, 'add_account.html')
@@ -531,8 +542,10 @@ def financial_tips(request):
 @login_required
 def savings_list(request):
     goals = SavingsGoal.objects.filter(user=request.user).order_by('-created_at')
+    # Берём первый активный аккаунт пользователя
+    account = Account.objects.filter(user=request.user, is_active=True).first()
     context = get_base_context(request)
-    context.update({'goals': goals, 'title': 'Мои накопления'})
+    context.update({'goals': goals, 'title': 'Мои накопления', 'account': account})
     return render(request, 'savings_list.html', context)
 
 @login_required
@@ -576,3 +589,78 @@ def savings_delete(request, goal_id):
     context = get_base_context(request)
     context.update({'goal': goal, 'title': 'Удалить цель'})
     return render(request, 'savings_delete.html', context)
+
+class SavingsGoalTransactionForm(forms.Form):
+    amount = forms.DecimalField(min_value=0.01, max_digits=12, decimal_places=2, label='Сумма', widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Сумма'}))
+
+@require_POST
+@login_required
+def savings_deposit_ajax(request, goal_id):
+    import json
+    from django.utils import timezone
+    try:
+        data = json.loads(request.body)
+        amount = Decimal(data.get('amount', '0'))
+        if amount <= 0:
+            return JsonResponse({'success': False, 'error': 'Введите корректную сумму!'}, status=400)
+        goal = get_object_or_404(SavingsGoal, id=goal_id, user=request.user)
+        # Получаем или создаём категорию для пополнения накопления
+        category, _ = Category.objects.get_or_create(user=request.user, name='Пополнение накопления')
+        with transaction.atomic():
+            # Создаём транзакцию (расход)
+            Transaction.objects.create(
+                user=request.user,
+                amount=amount,
+                description=f'Пополнение цели "{goal.title}"',
+                date=timezone.now().date(),
+                transaction_type='expense',
+                category=category
+            )
+            # Пополняем накопление
+            goal.current_amount += amount
+            goal.save()
+        return JsonResponse({'success': True, 'new_balance': None, 'new_goal': str(goal.current_amount)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@require_POST
+@login_required
+def savings_withdraw_ajax(request, goal_id):
+    import json
+    from django.utils import timezone
+    try:
+        data = json.loads(request.body)
+        amount = Decimal(data.get('amount', '0'))
+        if amount <= 0:
+            return JsonResponse({'success': False, 'error': 'Введите корректную сумму!'}, status=400)
+        goal = get_object_or_404(SavingsGoal, id=goal_id, user=request.user)
+        if goal.current_amount < amount:
+            return JsonResponse({'success': False, 'error': 'Недостаточно средств на цели!'}, status=400)
+        # Получаем или создаём категорию для вывода с накопления
+        category, _ = Category.objects.get_or_create(user=request.user, name='Вывод с накопления')
+        with transaction.atomic():
+            # Создаём транзакцию (доход)
+            Transaction.objects.create(
+                user=request.user,
+                amount=amount,
+                description=f'Вывод с цели "{goal.title}"',
+                date=timezone.now().date(),
+                transaction_type='income',
+                category=category
+            )
+            # Снимаем с накопления
+            goal.current_amount -= amount
+            goal.save()
+        return JsonResponse({'success': True, 'new_balance': None, 'new_goal': str(goal.current_amount)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@login_required
+def delete_user(request):
+    if request.method == 'POST':
+        user = request.user
+        logout(request)
+        user.delete()
+        messages.success(request, 'Ваш аккаунт был полностью удалён.')
+        return redirect('dashboard')
+    return render(request, 'delete_user_confirm.html')

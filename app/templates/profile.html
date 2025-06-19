@@ -221,6 +221,13 @@
     box-shadow: 0 8px 32px rgba(118, 75, 162, 0.10);
 }
 
+.spending-legend h5,
+.total-spending h3,
+.total-spending h3 .ruble,
+.total-spending p {
+    color: #181818 !important;
+}
+
 .category-list {
     margin-top: 1.2rem;
 }
@@ -339,35 +346,52 @@
 }
 </style>
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header text-center">
-                    <h4 class="text-white mb-0">
-                        <i class="fas fa-user me-2"></i>
-                        Личные данные
-                    </h4>
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card profile-main-card shadow-lg border-0 mb-5" style="border-radius: 28px; background: linear-gradient(135deg, #23335a 0%, #2e4372 100%);">
+                <div class="card-header text-center" style="border-radius: 28px 28px 0 0; background: linear-gradient(90deg, #1976d2 0%, #27ae60 100%);">
+                    <h3 class="mb-0 text-white" style="font-weight: 800; letter-spacing: 0.02em;">
+                        <i class="fas fa-user me-2"></i> Личные данные
+                    </h3>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <div class="profile-label"><i class="fas fa-user me-2"></i>Имя пользователя</div>
-                        <div class="profile-value">{{ user.username }}</div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="profile-label"><i class="fas fa-envelope me-2"></i>Email</div>
-                        <div class="profile-value">{{ user.email }}</div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="profile-label"><i class="fas fa-calendar-alt me-2"></i>Дата регистрации</div>
-                        <div class="profile-value">{{ user.date_joined|date:"d.m.Y H:i" }}</div>
-                    </div>
-                    <div class="mb-2">
-                        <div class="profile-label"><i class="fas fa-key me-2"></i>Пароль</div>
-                        <div class="profile-password">
-                            <input type="password" id="profilePassword" value="{{ user_password|default:'••••••••' }}" readonly>
-                            <button type="button" class="toggle-password" onclick="toggleProfilePassword()" title="Показать/скрыть пароль">
-                                <i class="fas fa-eye" id="profilePasswordIcon"></i>
-                            </button>
+                <div class="card-body p-5">
+                    <div class="row g-4 align-items-center justify-content-center">
+                        <div class="col-12 col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-user fa-lg text-white me-3"></i>
+                                <div>
+                                    <div class="profile-label text-white">Имя пользователя</div>
+                                    <div class="profile-value text-white" style="font-size:1.2rem; font-weight:600;">{{ user.username }}</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-envelope fa-lg text-white me-3"></i>
+                                <div>
+                                    <div class="profile-label text-white">Email</div>
+                                    <div class="profile-value text-white" style="font-size:1.2rem; font-weight:600;">{{ user.email }}</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar-alt fa-lg text-white me-3"></i>
+                                <div>
+                                    <div class="profile-label text-white">Дата регистрации</div>
+                                    <div class="profile-value text-white" style="font-size:1.2rem; font-weight:600;">{{ user.date_joined|date:"d.m.Y H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-key fa-lg text-white me-3"></i>
+                                <div style="width:100%;">
+                                    <div class="profile-label text-white mb-2">Пароль</div>
+                                    <div class="profile-password" style="background: #e3eafc; border-radius: 16px; box-shadow: 0 2px 12px rgba(44,62,80,0.10); padding: 0.6rem 1.2rem; display: flex; align-items: center;">
+                                        <input type="password" id="profilePassword" value="{% if user_password %}{{ user_password }}{% else %}••••••••{% endif %}" readonly style="font-size:1.25rem; letter-spacing:0.12em; background: transparent; border: none; width: 100%; color: #23335a; font-weight: 600;">
+                                        <button type="button" class="toggle-password" onclick="toggleProfilePassword()" title="Показать/скрыть пароль" style="background: none; border: none; color: #23335a; font-size: 1.3rem; margin-left: 0.5rem;">
+                                            <i class="fas fa-eye" id="profilePasswordIcon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -386,45 +410,27 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="fas fa-calendar-alt fa-3x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                </div>
-                                <h4 class="mb-1">{{ user.date_joined|date:"d.m.Y" }}</h4>
-                                <p class="text-muted mb-0">Дата регистрации</p>
+                    <div class="d-flex justify-content-center align-items-stretch gap-5 flex-wrap py-3">
+                        <div class="text-center flex-fill" style="min-width:220px;">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-alt fa-3x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                             </div>
+                            <h4 class="mb-1">{{ user.date_joined|date:"d.m.Y" }}</h4>
+                            <p class="text-muted mb-0">Дата регистрации</p>
                         </div>
-                        
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="fas fa-clock fa-3x" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                </div>
-                                <h4 class="mb-1">{{ days_registered }}</h4>
-                                <p class="text-muted mb-0">Дней в системе</p>
+                        <div class="text-center flex-fill" style="min-width:220px;">
+                            <div class="mb-3">
+                                <i class="fas fa-clock fa-3x" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                             </div>
+                            <h4 class="mb-1">{{ days_registered }}</h4>
+                            <p class="text-muted mb-0">Дней в системе</p>
                         </div>
-                        
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="fas fa-exchange-alt fa-3x" style="background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                </div>
-                                <h4 class="mb-1">{{ transactions_count }}</h4>
-                                <p class="text-muted mb-0">Всего транзакций</p>
+                        <div class="text-center flex-fill" style="min-width:220px;">
+                            <div class="mb-3">
+                                <i class="fas fa-exchange-alt fa-3x" style="background: var(--info-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                             </div>
-                        </div>
-                        
-                        <div class="col-lg-3 col-md-6 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="fas fa-credit-card fa-3x" style="background: var(--warning-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
-                                </div>
-                                <h4 class="mb-1">{{ accounts_count }}</h4>
-                                <p class="text-muted mb-0">Аккаунтов</p>
-                            </div>
+                            <h4 class="mb-1">{{ transactions_count }}</h4>
+                            <p class="text-muted mb-0">Всего транзакций</p>
                         </div>
                     </div>
                 </div>
@@ -462,13 +468,15 @@
                         </div>
                         <div class="col-lg-4 col-md-12">
                             <div class="spending-legend">
-                                <h5 class="mb-3 text-center text-dark">
-                                    <i class="fas fa-list me-2"></i>
+                                <h5 class="mb-3 text-center" style="color:#181818;font-weight:700;">
+                                    <i class="fas fa-list me-2" style="color:#764ba2;"></i>
                                     Детализация трат
                                 </h5>
                                 <div class="total-spending">
-                                    <h3 class="mb-1">{{ total_spending|floatformat:0 }} <span class="ruble">₽</span></h3>
-                                    <p class="mb-0">Общая сумма трат</p>
+                                    <h3 class="mb-1" style="color:#181818;font-weight:900;">
+                                        {{ total_spending|floatformat:0 }} <span class="ruble" style="color:#764ba2;">₽</span>
+                                    </h3>
+                                    <p class="mb-0" style="color:#181818;">Общая сумма трат</p>
                                 </div>
                                 <div class="category-list">
                                     {% for item in spending_by_category %}
@@ -563,6 +571,15 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="text-center mt-3">
+        <form method="post" action="{% url 'delete_user' %}" onsubmit="return confirm('Вы уверены, что хотите полностью удалить свой аккаунт? Это действие необратимо!');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-lg btn-danger" style="background: linear-gradient(90deg, #b3127a 0%, #6a0572 100%); border: none;">
+                <i class="fas fa-user-times me-2"></i>Удалить аккаунт
+            </button>
+        </form>
     </div>
 </div>
 

@@ -4,8 +4,13 @@
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center mb-4">
         <div class="col-lg-8 col-md-10 text-center">
-            <h2 class="mb-3 lfm-gradient-text"><i class="fas fa-piggy-bank me-2"></i>Мои накопления</h2>
+            <h2 class="mb-3 savings-title-glow"><i class="fas fa-piggy-bank me-2 savings-title-icon"></i>Мои накопления</h2>
             <a href="{% url 'savings_add' %}" class="btn btn-success mb-3"><i class="fas fa-plus"></i> Новая цель</a>
+            {% if account %}
+            <div class="mb-2 savings-account-balance-info">
+                <span class="badge bg-info text-dark" style="font-size:1.1rem;">Баланс аккаунта: <b>{{ account.balance|floatformat:2 }} ₽</b></span>
+            </div>
+            {% endif %}
         </div>
     </div>
     <div class="row g-4">
@@ -16,10 +21,23 @@
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="card-title mb-0">{{ goal.title }}</h5>
                         <div>
-                            <a href="{% url 'savings_edit' goal.id %}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="fas fa-edit"></i></a>
-                            <a href="{% url 'savings_delete' goal.id %}" class="btn btn-sm btn-outline-danger" title="Удалить" onclick="return confirm('Удалить цель?')"><i class="fas fa-trash-alt"></i></a>
+                            <div class="d-flex flex-wrap gap-2 mb-2 justify-content-end">
+                                <a href="{% url 'savings_edit' goal.id %}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="fas fa-edit"></i></a>
+                                <a href="{% url 'savings_delete' goal.id %}" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="fas fa-trash-alt"></i></a>
+                                <button type="button" class="btn btn-sm btn-success ms-1 savings-go-deposit" data-goal="{{ goal.id }}"><i class="fas fa-arrow-down"></i> Пополнить</button>
+                                <button type="button" class="btn btn-sm btn-warning ms-1 savings-go-withdraw" data-goal="{{ goal.id }}"><i class="fas fa-arrow-up"></i> Вывести</button>
+                            </div>
                         </div>
                     </div>
+                    <div class="d-flex justify-content-center position-relative">
+                        <div class="savings-amount-form-custom mb-2 position-relative" id="savings-amount-form-{{ goal.id }}">
+                            <form class="mb-0 position-relative" onsubmit="return false;">
+                                <input type="number" name="amount" step="0.01" min="0.01" class="savings-amount-input" placeholder="Введите сумму" id="amount-input-{{ goal.id }}" autocomplete="off">
+                                {# <span class="savings-amount-currency"><i class="fas fa-ruble-sign"></i></span> #}
+                            </form>
+                        </div>
+                    </div>
+                    <div class="savings-msg-abs" id="savings-msg-{{ goal.id }}"></div>
                     <div class="mb-2">
                         <span class="fw-bold">{{ goal.current_amount }} / {{ goal.target_amount }} ₽</span>
                         {% if goal.deadline %}<span class="badge bg-secondary ms-2">до {{ goal.deadline|date:'d E Y г.' }}</span>{% endif %}
@@ -39,6 +57,9 @@
         {% endfor %}
     </div>
 </div>
+<form style="display:none;">
+    {% csrf_token %}
+</form>
 <style>
 .savings-goal-card {
     background: #29406a;
@@ -75,5 +96,214 @@
     font-weight: 600;
     text-shadow: 0 1px 4px rgba(44,62,80,0.13);
 }
+.savings-amount-form-custom {
+    background: linear-gradient(135deg, #e3eafc 0%, #cfd8e6 100%);
+    border-radius: 32px;
+    padding: 12px 60px 12px 28px;
+    min-width: 200px;
+    max-width: 320px;
+    box-shadow: 0 6px 32px 0 rgba(44,62,80,0.13), 0 2px 8px 0 rgba(0,0,0,0.10);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0.5rem;
+    position: relative;
+}
+.savings-amount-input {
+    background: transparent;
+    border: none;
+    color: #23272b;
+    font-size: 1.5rem;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    padding: 0 48px 0 0;
+    font-weight: 700;
+    transition: box-shadow 0.2s, background 0.2s;
+    border-radius: 24px;
+    letter-spacing: 0.5px;
+}
+.savings-amount-input:focus {
+    background: #f5f8ff;
+    box-shadow: 0 0 0 2px #7ecbff;
+}
+.savings-amount-input::placeholder {
+    color: #7a8bbd !important;
+    opacity: 1;
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-align: center;
+    letter-spacing: 0.03em;
+}
+.savings-amount-input.is-invalid {
+    background: #ffb3b3;
+    color: #23272b;
+}
+.savings-amount-currency {
+    position: absolute;
+    right: 38px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8fa2c7;
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+.savings-msg-abs {
+    position: static;
+    display: block;
+    margin-top: 4px;
+    min-width: 140px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, color 0.3s;
+    z-index: 2;
+    text-align: center;
+}
+.savings-msg-abs.active {
+    opacity: 1;
+}
+.savings-msg-abs.error {
+    color: #e74c3c;
+}
+.savings-msg-abs.success {
+    color: #27ae60;
+}
+.savings-amount-input::-webkit-outer-spin-button,
+.savings-amount-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.savings-amount-input[type=number] {
+    -moz-appearance: textfield;
+}
+.savings-title-glow {
+    font-size: 2.7rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 12px #36d1c4, 0 0 18px #5b86e5, 0 2px 8px #29406a;
+    letter-spacing: 0.04em;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+}
+.savings-title-icon {
+    background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 16px #36d1c4, 0 0 32px #5b86e5;
+}
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function showMessage(msg, type, goalId) {
+        let msgDiv = document.getElementById('savings-msg-' + goalId);
+        msgDiv.textContent = msg;
+        msgDiv.className = 'savings-msg-abs active ' + (type === 'error' ? 'error' : 'success');
+        setTimeout(() => { msgDiv.classList.remove('active'); }, 2500);
+    }
+    document.querySelectorAll('.savings-go-deposit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const goalId = this.dataset.goal;
+            const input = document.getElementById('amount-input-' + goalId);
+            const amount = input.value;
+            if (amount && parseFloat(amount) > 0) {
+                btn.disabled = true;
+                fetch(`/savings/deposit-ajax/${goalId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]')||{}).value
+                    },
+                    body: JSON.stringify({amount: amount})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    if (data.success) {
+                        showMessage('Успешно пополнено!', 'success', goalId);
+                        // Обновить сумму цели на странице
+                        const goalAmount = btn.closest('.card-body').querySelector('.fw-bold');
+                        if (goalAmount) {
+                            const parts = goalAmount.textContent.split('/');
+                            goalAmount.textContent = `${parseFloat(data.new_goal).toLocaleString('ru-RU', {minimumFractionDigits:2})} /${parts[1]}`;
+                        }
+                        // Обновить прогресс-бар
+                        const progressBar = btn.closest('.card-body').querySelector('.savings-progress-bar');
+                        const targetAmount = parseFloat(goalAmount.textContent.split('/')[1].replace(/[^\d,\.]/g, '').replace(',', '.'));
+                        const newGoal = parseFloat(data.new_goal);
+                        let percent = 0;
+                        if (targetAmount > 0) {
+                            percent = Math.min(100, Math.round((newGoal / targetAmount) * 100));
+                        }
+                        progressBar.style.width = percent + '%';
+                        progressBar.setAttribute('aria-valuenow', percent);
+                        const label = progressBar.querySelector('.progress-label');
+                        if (label) label.textContent = percent + '%';
+                        input.value = '';
+                    } else {
+                        showMessage(data.error || 'Ошибка!', 'error', goalId);
+                    }
+                })
+                .catch(() => { btn.disabled = false; showMessage('Ошибка сети!', 'error', goalId); });
+            } else {
+                input.focus();
+                input.classList.add('is-invalid');
+                setTimeout(() => input.classList.remove('is-invalid'), 1200);
+            }
+        });
+    });
+    document.querySelectorAll('.savings-go-withdraw').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const goalId = this.dataset.goal;
+            const input = document.getElementById('amount-input-' + goalId);
+            const amount = input.value;
+            if (amount && parseFloat(amount) > 0) {
+                btn.disabled = true;
+                fetch(`/savings/withdraw-ajax/${goalId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]')||{}).value
+                    },
+                    body: JSON.stringify({amount: amount})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    if (data.success) {
+                        showMessage('Успешно выведено!', 'success', goalId);
+                        // Обновить сумму цели на странице
+                        const goalAmount = btn.closest('.card-body').querySelector('.fw-bold');
+                        if (goalAmount) {
+                            const parts = goalAmount.textContent.split('/');
+                            goalAmount.textContent = `${parseFloat(data.new_goal).toLocaleString('ru-RU', {minimumFractionDigits:2})} /${parts[1]}`;
+                        }
+                        // Обновить прогресс-бар
+                        const progressBar = btn.closest('.card-body').querySelector('.savings-progress-bar');
+                        const targetAmount = parseFloat(goalAmount.textContent.split('/')[1].replace(/[^\d,\.]/g, '').replace(',', '.'));
+                        const newGoal = parseFloat(data.new_goal);
+                        let percent = 0;
+                        if (targetAmount > 0) {
+                            percent = Math.min(100, Math.round((newGoal / targetAmount) * 100));
+                        }
+                        progressBar.style.width = percent + '%';
+                        progressBar.setAttribute('aria-valuenow', percent);
+                        const label = progressBar.querySelector('.progress-label');
+                        if (label) label.textContent = percent + '%';
+                        input.value = '';
+                    } else {
+                        showMessage(data.error || 'Ошибка!', 'error', goalId);
+                    }
+                })
+                .catch(() => { btn.disabled = false; showMessage('Ошибка сети!', 'error', goalId); });
+            } else {
+                input.focus();
+                input.classList.add('is-invalid');
+                setTimeout(() => input.classList.remove('is-invalid'), 1200);
+            }
+        });
+    });
+});
+</script>
 {% endblock %} 
