@@ -68,7 +68,7 @@ def dashboard(request):
     context = get_base_context(request)
     context.update({
         'title': 'Главная',
-        'transactions': Transaction.objects.filter(user=request.user).order_by('-date')[:5],
+        'transactions': Transaction.objects.filter(user=request.user).order_by('-date', '-id')[:5],
         'total_income': total_income,
         'total_expenses': total_expenses,
         'total_balance': total_balance,
@@ -83,7 +83,7 @@ def profile(request):
         days_registered = (timezone.now().date() - user.date_joined.date()).days
         transactions_count = Transaction.objects.filter(user=user).count()
         accounts_count = Account.objects.filter(user=user, is_active=True).count()
-        recent_transactions = Transaction.objects.filter(user=user).order_by('-date')[:10]
+        recent_transactions = Transaction.objects.filter(user=user).order_by('-date', '-id')[:10]
         total_income = Transaction.objects.filter(user=user, transaction_type='income').aggregate(total=Sum('amount'))['total'] or Decimal('0')
         total_expenses = Transaction.objects.filter(user=user, transaction_type='expense').aggregate(total=Sum('amount'))['total'] or Decimal('0')
         total_balance = total_income - total_expenses
@@ -664,3 +664,10 @@ def delete_user(request):
         messages.success(request, 'Ваш аккаунт был полностью удалён.')
         return redirect('dashboard')
     return render(request, 'delete_user_confirm.html')
+
+@login_required
+def clear_transactions(request):
+    if request.method == 'POST':
+        Transaction.objects.filter(user=request.user).delete()
+        messages.success(request, 'Вся история транзакций успешно очищена!')
+    return redirect('profile')

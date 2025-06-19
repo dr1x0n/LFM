@@ -1,0 +1,9 @@
+/* Глобальные плавные стили для карточек */
+.dashboard-card, .card, .savings-goal-card {
+    transition: box-shadow 0.5s cubic-bezier(.4,1.4,.3,1), transform 0.5s cubic-bezier(.4,1.4,.3,1), background 0.5s cubic-bezier(.4,1.4,.3,1);
+}
+.dashboard-card:hover, .card:hover, .savings-goal-card:hover {
+    box-shadow: 0 8px 32px 0 rgba(44,62,80,0.18), 0 2px 8px 0 rgba(0,0,0,0.13);
+    transform: translateY(-6px) scale(1.025);
+    background: linear-gradient(120deg, #2b5876 0%, #4e4376 100%);
+} 

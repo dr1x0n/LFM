@@ -26,4 +26,5 @@ urlpatterns = [
     path('savings/deposit-ajax/<int:goal_id>/', views.savings_deposit_ajax, name='savings_deposit_ajax'),
     path('savings/withdraw-ajax/<int:goal_id>/', views.savings_withdraw_ajax, name='savings_withdraw_ajax'),
     path('delete-user/', views.delete_user, name='delete_user'),
+    path('clear_transactions/', views.clear_transactions, name='clear_transactions'),
 ] 
